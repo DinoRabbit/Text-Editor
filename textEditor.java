@@ -6,16 +6,14 @@ import javax.swing.text.*;
 
 //Simple Text Editor similar to notepad
 
-public class textEditor extends JFrame
+public class textEditor extends JFrame 
 {
-	
 	private JTextArea text = new JTextArea(50, 120);
 	private String currentFile = new String("Untitled");
 	private JFileChooser dialog = new JFileChooser(System.getProperty("user.dir"));
 	private boolean changed = false;
 	
-	
-	//Constructor, right now, we just make a window where we can type things, but nothing else.
+	//Constructor
 	public textEditor()
 	{
 		//Create the text area and scrollbar for the program
@@ -44,10 +42,12 @@ public class textEditor extends JFrame
 		edit.add(Cut);
 		edit.add(Copy);
 		edit.add(Paste);
+		edit.add(SelectAll);
 		
 		edit.getItem(0).setText("Cut");
 		edit.getItem(1).setText("Copy");
 		edit.getItem(2).setText("Paste");
+		edit.getItem(3).setText("Select All");
 		
 		//Create the toolbar and add several buttons to it
 		JToolBar tool = new JToolBar();
@@ -74,8 +74,17 @@ public class textEditor extends JFrame
 		
 		
 		text.addKeyListener(keyL);
+		
+		//Add a Window Listener to prompt the user to save the current file when the window is closed
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e)
+			{
+				closeWindow();
+			}
+		});
+		
 		setTitle("My Text Editor - " + currentFile);
-		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		pack();
 		setVisible(true);
 	}
@@ -96,7 +105,7 @@ public class textEditor extends JFrame
 	{
 		public void actionPerformed(ActionEvent e)
 		{
-			new textEditor();
+			newWindow();
 		}
 	};
 	
@@ -104,8 +113,7 @@ public class textEditor extends JFrame
 	{
 		public void actionPerformed(ActionEvent e)
 		{
-			saveOld();
-			System.exit(0);
+			closeWindow();
 		}
 	};
 	
@@ -144,11 +152,38 @@ public class textEditor extends JFrame
 	Action Cut = map.get(DefaultEditorKit.cutAction);
 	Action Copy = map.get(DefaultEditorKit.copyAction);
 	Action Paste = map.get(DefaultEditorKit.pasteAction);
+	Action SelectAll = map.get(DefaultEditorKit.selectAllAction);
+
+	//Several methods used to save and read files, and open and close windows as needed
+	private void closeWindow()
+	{
+		if(changed)
+		{
+			if(!currentFile.equals("Untitled"))
+				saveOld();
+			else
+				if(JOptionPane.showConfirmDialog(this, "Would you like to save "+ currentFile +"?","Save",JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
+					saveFileAs();
+		}
+		this.dispose();
+	}
 	
-	//Several methods used to save and read files as needed
+	private void newWindow()
+	{
+		if(changed)
+		{
+			if(!currentFile.equals("Untitled"))
+				saveOld();
+			else
+				if(JOptionPane.showConfirmDialog(this, "Would you like to save "+ currentFile +"?","Save",JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
+					saveFileAs();
+		}
+		new textEditor();
+		this.dispose();
+	}
 	private void saveOld()
 	{
-		if(JOptionPane.showConfirmDialog(this, "Would you like to save "+ currentFile +"?","Save",JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
+		if(JOptionPane.showConfirmDialog(this, "Would you like to save your changes to "+ currentFile +"?","Save",JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
 			saveFile(currentFile);
 	}
 	
